@@ -1,5 +1,6 @@
 "use client";
 
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import { NAVI_MUMBAI_CENTER } from "@/lib/nodes";
@@ -104,7 +105,12 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
       .addTo(map);
   }, [pendingPin]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return (
+    <div
+      ref={containerRef}
+      style={{ position: "absolute", inset: 0 }}
+    />
+  );
 }
 
 function renderPopup(pin: Pin): string {

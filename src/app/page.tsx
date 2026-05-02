@@ -113,7 +113,7 @@ export default function Home() {
         onStartSeeker={() => setArmed("seeker")}
       />
 
-      <div className="relative flex-1">
+      <div className="relative flex-1 h-full min-h-0">
         <MapView
           pins={filtered}
           pendingPin={pending}
