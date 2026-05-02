@@ -30,9 +30,8 @@ export default function Home() {
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
-        .from("pins")
+        .from("pins_public")
         .select("*")
-        .eq("hidden", false)
         .order("created_at", { ascending: false })
         .limit(2000);
       if (cancelled) return;
@@ -91,15 +90,15 @@ export default function Home() {
     };
     setPins((prev) => [optimistic, ...prev]);
 
-    if (supabase) {
-      const res = await fetch("/api/pins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        throw new Error("Could not save pin to server. It is shown locally only.");
-      }
+    const res = await fetch("/api/pins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      console.error("[pins] server error:", body);
+      throw new Error(body.error ?? "Could not save pin to server.");
     }
   }
 
