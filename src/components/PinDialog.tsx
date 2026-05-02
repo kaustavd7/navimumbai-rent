@@ -106,7 +106,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
             <select
               value={bhk}
               onChange={(e) => setBhk(e.target.value as BHK)}
-              className="input"
+              className="nm-input"
             >
               {BHK_OPTIONS.map((b) => (
                 <option key={b} value={b}>
@@ -121,7 +121,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
               inputMode="numeric"
               value={rent}
               onChange={(e) => setRent(e.target.value)}
-              className="input"
+              className="nm-input"
               placeholder="e.g. 35000"
               required
             />
@@ -131,7 +131,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
             <select
               value={node}
               onChange={(e) => setNode(e.target.value)}
-              className="input"
+              className="nm-input"
             >
               <option value="">Select node…</option>
               {NODES.map((n) => (
@@ -145,7 +145,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
             <input
               value={sector}
               onChange={(e) => setSector(e.target.value)}
-              className="input"
+              className="nm-input"
               placeholder="e.g. 17"
             />
           </Field>
@@ -156,7 +156,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
                 <select
                   value={furnishing}
                   onChange={(e) => setFurnishing(e.target.value as Furnishing)}
-                  className="input"
+                  className="nm-input"
                 >
                   {FURNISHING_OPTIONS.map((f) => (
                     <option key={f} value={f}>
@@ -169,7 +169,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
                 <select
                   value={gated ? "yes" : "no"}
                   onChange={(e) => setGated(e.target.value === "yes")}
-                  className="input"
+                  className="nm-input"
                 >
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
@@ -179,7 +179,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
                 <input
                   value={society}
                   onChange={(e) => setSociety(e.target.value)}
-                  className="input"
+                  className="nm-input"
                   placeholder="e.g. Sai Plaza"
                 />
               </Field>
@@ -191,7 +191,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input"
+              className="nm-input"
               placeholder="shared only when matched"
             />
           </Field>
@@ -199,7 +199,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="input"
+              className="nm-input"
               placeholder="shared only when matched"
             />
           </Field>
@@ -208,7 +208,7 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="input min-h-[64px]"
+              className="nm-input" style={{ minHeight: 64 }}
               placeholder="Move-in date, lifestyle, any context."
             />
           </Field>
@@ -232,19 +232,16 @@ export default function PinDialog({ type, location, onClose, onSubmit }: Props) 
           </button>
         </div>
 
-        <style jsx>{`
-          .input {
+        <style>{`
+          .nm-input {
             width: 100%;
             border: 1px solid rgb(212 212 216);
             border-radius: 8px;
             padding: 6px 10px;
             font-size: 14px;
-            background: white;
-            color: inherit;
-          }
-          :global(.dark) .input {
-            background: rgb(24 24 27);
-            border-color: rgb(63 63 70);
+            background: #ffffff;
+            color: #0c0a09;
+            color-scheme: light;
           }
         `}</style>
       </form>
