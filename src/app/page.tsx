@@ -90,15 +90,36 @@ export default function Home() {
     };
     setPins((prev) => [optimistic, ...prev]);
 
-    const res = await fetch("/api/pins", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      console.error("[pins] server error:", body);
-      throw new Error(body.error ?? "Could not save pin to server.");
+    if (supabase) {
+      const { error } = await supabase.from("pins").insert({
+        type: input.type,
+        lat: input.lat,
+        lng: input.lng,
+        node: input.node,
+        sector: input.sector,
+        society: input.society,
+        bhk: input.bhk,
+        rent: input.rent,
+        furnishing: input.furnishing,
+        gated: input.gated,
+        parking: input.parking,
+        deposit_months: input.deposit_months,
+        pet_ok: input.pet_ok,
+        gender_pref: input.gender_pref,
+        diet_pref: input.diet_pref,
+        smoking_pref: input.smoking_pref,
+        notes: input.notes,
+        contact_email: input.contact_email ?? null,
+        contact_phone: input.contact_phone ?? null,
+        hidden: false,
+        expires_at: input.type === "seeker"
+          ? new Date(Date.now() + 30 * 86400_000).toISOString()
+          : null,
+      });
+      if (error) {
+        console.error("[pins] insert error:", error);
+        throw new Error(error.message);
+      }
     }
   }
 
