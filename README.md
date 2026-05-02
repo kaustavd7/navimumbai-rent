@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# navimumbai.rent
 
-## Getting Started
+A crowdsourced, broker-free rent map for Navi Mumbai. Spiritual sibling of [bengaluru.rent](https://bengaluru.rent).
 
-First, run the development server:
+**Free forever. No signup. No ads. No data sold.**
+
+## Stack
+
+- Next.js 15 (App Router) + TypeScript + Tailwind v4
+- MapLibre GL + MapTiler tiles
+- Supabase (Postgres) for pins + reports
+- Resend for the nightly match emails (Phase 2)
+- Vercel for hosting
+
+## Local dev
 
 ```bash
+cp .env.example .env.local
+# fill in Supabase + MapTiler keys
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The site works without keys — it falls back to seeded pins and a demo map style — so you can see the UI immediately.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Once you have a Supabase project:
 
-## Learn More
+1. Open the SQL editor.
+2. Paste and run [`supabase/schema.sql`](./supabase/schema.sql).
+3. Drop the project URL, anon key, and service-role key into `.env.local`.
 
-To learn more about Next.js, take a look at the following resources:
+## Project layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/
+    page.tsx                  map + sidebar shell
+    layout.tsx                fonts, metadata
+    faq/page.tsx
+    stats/page.tsx
+    api/pins/route.ts         POST new pin (rate-limited, validated)
+    api/pins/[id]/report/route.ts
+  components/
+    MapView.tsx               MapLibre client component
+    Sidebar.tsx               filters + live stats
+    PinDialog.tsx             drop-pin form
+  lib/
+    nodes.ts                  Navi Mumbai CIDCO nodes
+    seed.ts                   placeholder pins for empty DB
+    supabase.ts               browser client
+    types.ts
+supabase/schema.sql           DDL + RLS + public view
+public/brand/                 logo assets
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Roadmap
 
-## Deploy on Vercel
+- **Phase 1 (this commit):** map, drop-pin, filters, sidebar stats, FAQ.
+- **Phase 2:** nightly matcher cron + Resend emails, report flow polish, seeker expiry.
+- **Phase 3:** metro + harbour line overlays, sector autocomplete, area-stats rectangle, per-node SEO pages, green-cover Sentinel-2 toggle.
+- **Phase 4:** compare-nodes view, dark mode polish, bottom-sheet on mobile, OG images per node, Plausible.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## A note on the domain
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The domain `navimumbai.rent` itself is also up for sale. If you want to take this further or run something else on the address, email **kaustavdg.dasgupta@gmail.com**.
+
+> BHK: 1 domain. Rent: negotiable. Available.
