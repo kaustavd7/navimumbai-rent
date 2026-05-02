@@ -74,15 +74,33 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
         "h-6 w-6 rounded-full border-2 border-white shadow-md cursor-pointer transition-transform hover:scale-110";
       el.style.background =
         pin.type === "lister" ? "var(--accent, #0f766e)" : "#f59e0b";
-      el.title = pin.type === "lister" ? "Listed flat" : "Seeker";
 
-      const popup = new maplibregl.Popup({ offset: 14, closeButton: false })
-        .setHTML(renderPopup(pin));
+      const hoverPopup = new maplibregl.Popup({
+        offset: 14,
+        closeButton: false,
+        closeOnClick: false,
+      }).setHTML(renderHoverPopup(pin));
+
+      const clickPopup = new maplibregl.Popup({
+        offset: 14,
+        closeButton: true,
+      }).setHTML(renderClickPopup(pin));
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([pin.lng, pin.lat])
-        .setPopup(popup)
         .addTo(map);
+
+      el.addEventListener("mouseenter", () => {
+        hoverPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
+      });
+      el.addEventListener("mouseleave", () => {
+        hoverPopup.remove();
+      });
+      el.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        hoverPopup.remove();
+        clickPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
+      });
 
       markersRef.current.push(marker);
     }
@@ -113,24 +131,73 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
   );
 }
 
-function renderPopup(pin: Pin): string {
+function renderHoverPopup(pin: Pin): string {
+  const price = `₹${pin.rent.toLocaleString("en-IN")}/mo`;
+  const head =
+    pin.type === "lister"
+      ? `${pin.bhk} · ${price}`
+      : `Seeking ${pin.bhk} · up to ${price}`;
+  return `
+    <div style="font-family:var(--font-geist-sans),system-ui;padding:2px 6px;min-width:140px;color:#0c0a09">
+      <div style="font-weight:600;font-size:13px">${escapeHtml(head)}</div>
+      <div style="color:#666;font-size:11px;margin-top:1px">click for details</div>
+    </div>
+  `;
+}
+
+function renderClickPopup(pin: Pin): string {
+  const price = `₹${pin.rent.toLocaleString("en-IN")}/mo`;
   const title =
     pin.type === "lister"
-      ? `${pin.bhk} · ₹${pin.rent.toLocaleString("en-IN")}/mo`
-      : `Seeking ${pin.bhk} · up to ₹${pin.rent.toLocaleString("en-IN")}/mo`;
-  const sub = [pin.society, pin.sector ? `Sector ${pin.sector}` : null, pin.node]
+      ? `${pin.bhk} · ${price}`
+      : `Seeking ${pin.bhk} · up to ${price}`;
+  const location = [
+    pin.society,
+    pin.sector ? `Sector ${pin.sector}` : null,
+    pin.node,
+  ]
     .filter(Boolean)
     .join(" · ");
+
+  const detailRows: string[] = [];
+  if (pin.furnishing) detailRows.push(row("Furnishing", pin.furnishing));
+  if (pin.gated !== null && pin.gated !== undefined)
+    detailRows.push(row("Gated society", pin.gated ? "Yes" : "No"));
+  if (pin.parking !== null && pin.parking !== undefined && pin.parking > 0)
+    detailRows.push(row("Parking", `${pin.parking} space${pin.parking > 1 ? "s" : ""}`));
+  if (pin.deposit_months)
+    detailRows.push(row("Deposit", `${pin.deposit_months} months`));
+  if (pin.pet_ok !== null && pin.pet_ok !== undefined)
+    detailRows.push(row("Pets", pin.pet_ok ? "Allowed" : "Not allowed"));
+  if (pin.gender_pref && pin.gender_pref !== "any")
+    detailRows.push(row("Gender", pin.gender_pref));
+  if (pin.diet_pref && pin.diet_pref !== "any")
+    detailRows.push(row("Diet", pin.diet_pref));
+  if (pin.smoking_pref && pin.smoking_pref !== "any")
+    detailRows.push(row("Smoking", pin.smoking_pref === "ok" ? "OK" : "No"));
+
   const notes = pin.notes
-    ? `<p style="margin-top:6px;color:#555;font-size:12px">${escapeHtml(pin.notes)}</p>`
+    ? `<p style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#444;font-size:12px;line-height:1.4">${escapeHtml(pin.notes)}</p>`
     : "";
+
+  const badge =
+    pin.type === "lister"
+      ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#0f766e;color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Listed flat</span>`
+      : `<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#f59e0b;color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Seeker</span>`;
+
   return `
-    <div style="font-family:var(--font-geist-sans),system-ui;padding:2px 4px;min-width:180px">
-      <div style="font-weight:600;font-size:14px">${escapeHtml(title)}</div>
-      <div style="color:#666;font-size:12px;margin-top:2px">${escapeHtml(sub)}</div>
+    <div style="font-family:var(--font-geist-sans),system-ui;padding:6px 8px;min-width:240px;max-width:280px;color:#0c0a09">
+      <div style="margin-bottom:6px">${badge}</div>
+      <div style="font-weight:600;font-size:15px">${escapeHtml(title)}</div>
+      ${location ? `<div style="color:#666;font-size:12px;margin-top:2px">${escapeHtml(location)}</div>` : ""}
+      ${detailRows.length ? `<div style="margin-top:8px;display:grid;grid-template-columns:1fr;gap:3px">${detailRows.join("")}</div>` : ""}
       ${notes}
     </div>
   `;
+}
+
+function row(label: string, value: string): string {
+  return `<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#888">${escapeHtml(label)}</span><span style="color:#0c0a09;font-weight:500">${escapeHtml(value)}</span></div>`;
 }
 
 function escapeHtml(s: string): string {
