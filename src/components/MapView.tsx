@@ -81,11 +81,13 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
         offset: 14,
         closeButton: false,
         closeOnClick: false,
+        maxWidth: "240px",
       }).setHTML(renderHoverPopup(pin));
 
       const clickPopup = new maplibregl.Popup({
         offset: 14,
         closeButton: true,
+        maxWidth: "320px",
       }).setHTML(renderClickPopup(pin));
 
       const marker = new maplibregl.Marker({ element: el })

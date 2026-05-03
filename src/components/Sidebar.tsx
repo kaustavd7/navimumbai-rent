@@ -30,7 +30,7 @@ export default function Sidebar({
   const stats = useMemo(() => computeStats(pins), [pins]);
 
   return (
-    <aside className="flex h-full w-full flex-col gap-4 overflow-y-auto bg-white/95 p-5 backdrop-blur dark:bg-zinc-950/95 md:w-[360px] md:border-r md:border-black/10 md:dark:border-white/10">
+    <aside className="flex h-full w-full flex-col gap-4 overflow-y-auto bg-white/95 p-5 backdrop-blur dark:bg-zinc-950/95 md:border-r md:border-black/10 md:dark:border-white/10">
       <header>
         <Link href="/" className="block">
           <h1 className="font-mono text-xl tracking-tight">
