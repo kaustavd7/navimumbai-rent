@@ -69,6 +69,16 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
+    // Only enable hover popups on devices that actually support hover.
+    // Touch devices fire spurious mouseenter on tap, which double-renders popups.
+    const hoverCapable =
+      typeof window !== "undefined" &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    // Track the currently-open click popup so we can close it before opening
+    // another, ensuring only one full card is visible at a time.
+    let openClickPopup: maplibregl.Popup | null = null;
+
     for (const pin of pins) {
       const el = document.createElement("button");
       el.type = "button";
@@ -94,16 +104,25 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
         .setLngLat([pin.lng, pin.lat])
         .addTo(map);
 
-      el.addEventListener("mouseenter", () => {
-        hoverPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
-      });
-      el.addEventListener("mouseleave", () => {
-        hoverPopup.remove();
-      });
+      if (hoverCapable) {
+        el.addEventListener("mouseenter", () => {
+          // Don't show hover preview if a full click card is already open.
+          if (openClickPopup) return;
+          hoverPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
+        });
+        el.addEventListener("mouseleave", () => {
+          hoverPopup.remove();
+        });
+      }
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
         hoverPopup.remove();
+        if (openClickPopup) openClickPopup.remove();
         clickPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
+        openClickPopup = clickPopup;
+        clickPopup.on("close", () => {
+          if (openClickPopup === clickPopup) openClickPopup = null;
+        });
       });
 
       markersRef.current.push(marker);
