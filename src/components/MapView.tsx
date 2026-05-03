@@ -93,12 +93,25 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
         .addTo(map);
 
       const openCard = (ev: Event) => {
+        ev.preventDefault();
         ev.stopPropagation();
+        // Snapshot the map view so we can restore it if anything tries
+        // to pan/zoom because of the popup opening.
+        const savedCenter = map.getCenter();
+        const savedZoom = map.getZoom();
         if (openClickPopup) openClickPopup.remove();
         clickPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
         openClickPopup = clickPopup;
         clickPopup.on("close", () => {
           if (openClickPopup === clickPopup) openClickPopup = null;
+        });
+        // Restore on the next two animation frames in case MapLibre
+        // queues a movement after the popup is mounted.
+        requestAnimationFrame(() => {
+          map.jumpTo({ center: savedCenter, zoom: savedZoom });
+          requestAnimationFrame(() => {
+            map.jumpTo({ center: savedCenter, zoom: savedZoom });
+          });
         });
       };
       el.addEventListener("click", openCard);
