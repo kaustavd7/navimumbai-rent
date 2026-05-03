@@ -37,3 +37,27 @@ body {
 .maplibregl-ctrl-attrib-inner {
   font-size: 10px;
 }
+
+/* Make popup content honor our inner max-width and look polished. */
+.maplibregl-popup {
+  max-width: 320px !important;
+}
+.maplibregl-popup-content {
+  max-width: 320px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  padding: 12px 14px !important;
+}
+.maplibregl-popup-tip {
+  display: none;
+}
+.maplibregl-popup-close-button {
+  font-size: 18px !important;
+  padding: 4px 10px !important;
+  color: #9ca3af !important;
+  background: transparent !important;
+}
+.maplibregl-popup-close-button:hover {
+  color: #171717 !important;
+  background: transparent !important;
+}

@@ -101,7 +101,6 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
         });
       };
       el.addEventListener("click", openCard);
-      el.addEventListener("touchend", openCard);
 
       markersRef.current.push(marker);
     }
