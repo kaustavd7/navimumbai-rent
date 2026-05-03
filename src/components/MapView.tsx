@@ -3,7 +3,9 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
-import { NAVI_MUMBAI_CENTER } from "@/lib/nodes";
+import { NAVI_MUMBAI_CENTER, NODES } from "@/lib/nodes";
+
+const NODE_NAME_BY_SLUG = new Map(NODES.map((n) => [n.slug, n.name]));
 import type { Pin } from "@/lib/types";
 
 type Props = {
@@ -137,10 +139,12 @@ function renderHoverPopup(pin: Pin): string {
     pin.type === "lister"
       ? `${pin.bhk} · ${price}`
       : `Seeking ${pin.bhk} · up to ${price}`;
+  const nodeName = pin.node ? NODE_NAME_BY_SLUG.get(pin.node) ?? pin.node : "";
   return `
-    <div style="font-family:var(--font-geist-sans),system-ui;padding:2px 6px;min-width:140px;color:#0c0a09">
+    <div style="font-family:var(--font-geist-sans),system-ui;padding:3px 6px;min-width:150px;color:#0c0a09">
       <div style="font-weight:600;font-size:13px">${escapeHtml(head)}</div>
-      <div style="color:#666;font-size:11px;margin-top:1px">click for details</div>
+      ${nodeName ? `<div style="color:#737373;font-size:11.5px;margin-top:2px">${escapeHtml(nodeName)}</div>` : ""}
+      <div style="color:#a3a3a3;font-size:10.5px;margin-top:3px;font-style:italic">click for details</div>
     </div>
   `;
 }
@@ -151,16 +155,17 @@ function renderClickPopup(pin: Pin): string {
     pin.type === "lister"
       ? `${pin.bhk} · ${price}`
       : `Seeking ${pin.bhk} · up to ${price}`;
+  const nodeName = pin.node ? NODE_NAME_BY_SLUG.get(pin.node) ?? pin.node : null;
   const location = [
     pin.society,
     pin.sector ? `Sector ${pin.sector}` : null,
-    pin.node,
+    nodeName,
   ]
     .filter(Boolean)
     .join(" · ");
 
   const detailRows: string[] = [];
-  if (pin.furnishing) detailRows.push(row("Furnishing", pin.furnishing));
+  if (pin.furnishing) detailRows.push(row("Furnishing", capitalize(pin.furnishing)));
   if (pin.gated !== null && pin.gated !== undefined)
     detailRows.push(row("Gated society", pin.gated ? "Yes" : "No"));
   if (pin.parking !== null && pin.parking !== undefined && pin.parking > 0)
@@ -170,34 +175,38 @@ function renderClickPopup(pin: Pin): string {
   if (pin.pet_ok !== null && pin.pet_ok !== undefined)
     detailRows.push(row("Pets", pin.pet_ok ? "Allowed" : "Not allowed"));
   if (pin.gender_pref && pin.gender_pref !== "any")
-    detailRows.push(row("Gender", pin.gender_pref));
+    detailRows.push(row("Gender", capitalize(pin.gender_pref)));
   if (pin.diet_pref && pin.diet_pref !== "any")
-    detailRows.push(row("Diet", pin.diet_pref));
+    detailRows.push(row("Diet", capitalize(pin.diet_pref)));
   if (pin.smoking_pref && pin.smoking_pref !== "any")
-    detailRows.push(row("Smoking", pin.smoking_pref === "ok" ? "OK" : "No"));
+    detailRows.push(row("Smoking", pin.smoking_pref === "ok" ? "Allowed" : "No"));
 
   const notes = pin.notes
-    ? `<p style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#444;font-size:12px;line-height:1.4">${escapeHtml(pin.notes)}</p>`
+    ? `<p style="margin:10px 0 2px;padding-top:10px;border-top:1px solid #ececec;color:#404040;font-size:12.5px;line-height:1.5">${escapeHtml(pin.notes)}</p>`
     : "";
 
-  const badge =
-    pin.type === "lister"
-      ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#0f766e;color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Listed flat</span>`
-      : `<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#f59e0b;color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Seeker</span>`;
+  const badgeColor = pin.type === "lister" ? "#0f766e" : "#f59e0b";
+  const badgeText = pin.type === "lister" ? "Listed flat" : "Seeker";
 
   return `
-    <div style="font-family:var(--font-geist-sans),system-ui;padding:6px 8px;min-width:240px;max-width:280px;color:#0c0a09">
-      <div style="margin-bottom:6px">${badge}</div>
-      <div style="font-weight:600;font-size:15px">${escapeHtml(title)}</div>
-      ${location ? `<div style="color:#666;font-size:12px;margin-top:2px">${escapeHtml(location)}</div>` : ""}
-      ${detailRows.length ? `<div style="margin-top:8px;display:grid;grid-template-columns:1fr;gap:3px">${detailRows.join("")}</div>` : ""}
+    <div style="font-family:var(--font-geist-sans),system-ui;padding:4px 4px 2px;min-width:260px;max-width:300px;color:#0c0a09">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="display:inline-block;padding:2px 8px;border-radius:999px;background:${badgeColor};color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px">${badgeText}</span>
+      </div>
+      <div style="font-weight:600;font-size:16px;line-height:1.25">${escapeHtml(title)}</div>
+      ${location ? `<div style="color:#737373;font-size:12.5px;margin-top:3px">${escapeHtml(location)}</div>` : ""}
+      ${detailRows.length ? `<div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">${detailRows.join("")}</div>` : ""}
       ${notes}
     </div>
   `;
 }
 
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function row(label: string, value: string): string {
-  return `<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#888">${escapeHtml(label)}</span><span style="color:#0c0a09;font-weight:500">${escapeHtml(value)}</span></div>`;
+  return `<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;gap:8px"><span style="color:#9ca3af">${escapeHtml(label)}</span><span style="color:#171717;font-weight:500;text-align:right">${escapeHtml(value)}</span></div>`;
 }
 
 function escapeHtml(s: string): string {
