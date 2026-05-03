@@ -175,7 +175,7 @@ export default function Home() {
         <div className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between gap-2 bg-gradient-to-b from-black/40 to-transparent p-3 md:hidden">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-900 shadow-lg"
             aria-label="Open menu"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -184,7 +184,7 @@ export default function Home() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <div className="rounded-full bg-white/95 px-3 py-1.5 font-mono text-sm shadow-lg">
+          <div className="rounded-full bg-white/95 px-3 py-1.5 font-mono text-sm text-zinc-900 shadow-lg">
             navimumbai<span className="text-teal-600">.rent</span>
           </div>
           <div className="w-10" />
@@ -200,7 +200,7 @@ export default function Home() {
           </button>
           <button
             onClick={() => setArmed("seeker")}
-            className="flex-1 max-w-[170px] rounded-full bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-lg"
+            className="flex-1 max-w-[170px] rounded-full border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-lg"
           >
             Find a flat
           </button>

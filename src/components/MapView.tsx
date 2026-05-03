@@ -69,12 +69,6 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    // Only enable hover popups on devices that actually support hover.
-    // Touch devices fire spurious mouseenter on tap, which double-renders popups.
-    const hoverCapable =
-      typeof window !== "undefined" &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
     // Track the currently-open click popup so we can close it before opening
     // another, ensuring only one full card is visible at a time.
     let openClickPopup: maplibregl.Popup | null = null;
@@ -87,13 +81,6 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
       el.style.background =
         pin.type === "lister" ? "var(--accent, #0f766e)" : "#f59e0b";
 
-      const hoverPopup = new maplibregl.Popup({
-        offset: 14,
-        closeButton: false,
-        closeOnClick: false,
-        maxWidth: "240px",
-      }).setHTML(renderHoverPopup(pin));
-
       const clickPopup = new maplibregl.Popup({
         offset: 14,
         closeButton: true,
@@ -104,26 +91,17 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
         .setLngLat([pin.lng, pin.lat])
         .addTo(map);
 
-      if (hoverCapable) {
-        el.addEventListener("mouseenter", () => {
-          // Don't show hover preview if a full click card is already open.
-          if (openClickPopup) return;
-          hoverPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
-        });
-        el.addEventListener("mouseleave", () => {
-          hoverPopup.remove();
-        });
-      }
-      el.addEventListener("click", (ev) => {
+      const openCard = (ev: Event) => {
         ev.stopPropagation();
-        hoverPopup.remove();
         if (openClickPopup) openClickPopup.remove();
         clickPopup.setLngLat([pin.lng, pin.lat]).addTo(map);
         openClickPopup = clickPopup;
         clickPopup.on("close", () => {
           if (openClickPopup === clickPopup) openClickPopup = null;
         });
-      });
+      };
+      el.addEventListener("click", openCard);
+      el.addEventListener("touchend", openCard);
 
       markersRef.current.push(marker);
     }
@@ -152,22 +130,6 @@ export default function MapView({ pins, onMapClick, pendingPin }: Props) {
       style={{ position: "absolute", inset: 0 }}
     />
   );
-}
-
-function renderHoverPopup(pin: Pin): string {
-  const price = `₹${pin.rent.toLocaleString("en-IN")}/mo`;
-  const head =
-    pin.type === "lister"
-      ? `${pin.bhk} · ${price}`
-      : `Seeking ${pin.bhk} · up to ${price}`;
-  const nodeName = pin.node ? NODE_NAME_BY_SLUG.get(pin.node) ?? pin.node : "";
-  return `
-    <div style="font-family:var(--font-geist-sans),system-ui;padding:3px 6px;min-width:150px;color:#0c0a09">
-      <div style="font-weight:600;font-size:13px">${escapeHtml(head)}</div>
-      ${nodeName ? `<div style="color:#737373;font-size:11.5px;margin-top:2px">${escapeHtml(nodeName)}</div>` : ""}
-      <div style="color:#a3a3a3;font-size:10.5px;margin-top:3px;font-style:italic">click for details</div>
-    </div>
-  `;
 }
 
 function renderClickPopup(pin: Pin): string {
